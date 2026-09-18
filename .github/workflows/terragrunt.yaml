@@ -1,0 +1,64 @@
+name: Main pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "main"
+
+permissions:
+  pull-requests: write
+
+jobs:
+  terragrunt:
+    name: "Terragrunt PLan & Apply"
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./terraform/environments/devl
+
+    environment:
+      name: devl
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
+        with:
+          terraform_version: 1.16.3
+          terraform_wrapper: false
+
+      - name: Setup Terragrunt
+        uses: autero1/action-terragrunt@aefb0a43c4f5503a91fefb307745c4d51c26ed0e
+        with:
+          terragrunt-version: 1.1.5
+
+      - name: Terragrunt Init
+        run: terragrunt run-all init --terragrunt-non-interactive
+
+      - name: Terragrunt Plan
+        env:
+          TF_VAR_aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          TF_VAR_aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        id: plan
+        run: terragrunt run-all plan --terragrunt-non-interactive
+
+      - name: Terragrunt Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          TF_VAR_aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          TF_VAR_aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terragrunt run-all apply --terragrunt-non-interactive -auto-approve
