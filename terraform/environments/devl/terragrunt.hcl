@@ -17,6 +17,6 @@ remote_state {
         key = "dwvidswntos/aether.tfstate"
         region = "us-east-1"
         encrypt = true
-        dynamodb_table = "terragrunt-909891185654-lockfiles"
+        use_lockfile = true
     }
 }
