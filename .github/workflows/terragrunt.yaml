@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   terragrunt:
-    name: "Terragrunt PLan & Apply"
+    name: "Terragrunt Plan & Apply"
     runs-on: ubuntu-latest
 
     defaults:
