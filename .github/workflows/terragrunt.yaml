@@ -47,18 +47,18 @@ jobs:
           terragrunt-version: 1.1.5
 
       - name: Terragrunt Init
-        run: terragrunt run-all init --terragrunt-non-interactive
+        run: terragrunt run-all init --non-interactive
 
       - name: Terragrunt Plan
         env:
           TF_VAR_aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         id: plan
-        run: terragrunt run-all plan --terragrunt-non-interactive
+        run: terragrunt run-all plan --non-interactive
 
       - name: Terragrunt Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
           TF_VAR_aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: terragrunt run-all apply --terragrunt-non-interactive -auto-approve
+        run: terragrunt run-all apply --non-interactive -auto-approve
