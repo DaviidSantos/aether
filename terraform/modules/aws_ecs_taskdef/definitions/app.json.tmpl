@@ -1,0 +1,41 @@
+[
+    {
+        "name": "${service_name}-task-definition",
+        "image": "${image}",
+        "essential": true,
+        "cpu": ${cpu_limit},
+        "memory": ${memory_limit},
+        "environment": [
+            {
+                "name": "AWS_REGION",
+                "value": "${aws_region}"
+            },
+            {
+                "name": "ENVIRONMENT",
+                "value": "${environment}"
+            }
+        ],
+        "portMappings": [
+            {
+                "containerPort": ${container_port},
+                "hostPort": ${container_port},
+                "protocol": "tcp"
+            }
+        ],
+        "mountPoints": [
+            {
+                "sourceVolume": "${volume_name}",
+                "containerPath": "${mount_container_path}",
+                "readOnly": false
+            }
+        ],
+        "logConfiguration": {
+            "logDriver": "awslogs",
+            "options": {
+                "awslogs-group": "${cw_log_group}",
+                "awslogs-region": "${aws_region}",
+                "awslogs-stream-prefix": "${service_name}"
+            }
+        }
+    }
+]
