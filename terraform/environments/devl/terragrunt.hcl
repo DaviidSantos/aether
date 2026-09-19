@@ -1,15 +1,14 @@
 terraform {
   source = "../../modules//aether_backend"
 
-  extra_arguments "common_vars" {
-    commands  = get_terraform_commands_that_need_vars()
-    arguments = ["-var-file=${get_terragrunt_dir()}/../../common.tfvars"]
-  }
-
   extra_arguments "retry_lock" {
     commands  = get_terraform_commands_that_need_locking()
     arguments = ["-lock-timeout=10m"]
   }
+}
+
+inputs = {
+  backend_ecr_repository_name = "aether_backend_repository"
 }
 
 remote_state {
