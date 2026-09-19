@@ -12,3 +12,7 @@ variable "aws_secret_key" {
   type      = string
   sensitive = true
 }
+
+variable "backend_ecr_repository_name" {
+  type = string
+}
