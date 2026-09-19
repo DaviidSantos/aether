@@ -42,10 +42,9 @@ jobs:
           terraform_wrapper: false
 
       - name: Setup Terragrunt
-        uses: gruntwork-io/terragrunt-action@8c1d96b76d445fd2e41475a3f0b63dcd1d9cc077
+        uses: autero1/action-terragrunt@aefb0a43c4f5503a91fefb307745c4d51c26ed0e
         with:
-          tg_version: 1.1.5
-          tofu_version: 'none'
+          terragrunt-version: 1.1.5
 
       - name: Terragrunt Init
         run: terragrunt run --all init --non-interactive
