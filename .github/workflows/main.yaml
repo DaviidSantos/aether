@@ -1,0 +1,49 @@
+name: Main pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "main"
+
+permissions:
+  pull-requests: write
+
+jobs:
+  terragrunt:
+    name: "Terragrunt Plan & Apply"
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./terraform/environments/devl
+
+    environment:
+      name: devl
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Build/Push Backend Image
+        uses: ./.github/actions/docker-build-push
+        with:
+          SHOULD_PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          IMAGE_NAME: aether_backend_repository
+          DOCKER_FILE_PATH: ./backend
+
+      - name: Terraform Plan and Apply
+        uses: ./.github/actions/terraform-plan-apply
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
