@@ -1,0 +1,60 @@
+name: Destroy Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "destroy-devl" to confirm destruction of the devl environment'
+        required: true
+        type: string
+      target:
+        description: "Optional: specific Terragrunt unit to destroy (leave empty to destroy ALL)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: "Confirm Destruction"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate confirmation input
+        run: |
+          if [ "${{ inputs.confirm }}" != "destroy-devl" ]; then
+            echo "::error::Confirmation string did not match. Expected 'destroy-devl', got '${{ inputs.confirm }}'."
+            exit 1
+          fi
+          echo "Confirmation accepted. Proceeding with destroy."
+
+  terragrunt-destroy:
+    name: "Terragrunt Destroy"
+    needs: guard
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./terraform/environments/devl
+
+    environment:
+      name: devl
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Terragrunt Destroy
+        uses: ./.github/actions/terragrunt-destroy
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          TARGET: ${{ inputs.target }}
