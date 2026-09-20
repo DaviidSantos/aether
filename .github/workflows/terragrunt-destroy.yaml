@@ -14,7 +14,6 @@ on:
         default: ""
 
 permissions:
-  id-token: write # if you later switch to OIDC
   contents: read
 
 jobs:
