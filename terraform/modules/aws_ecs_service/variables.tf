@@ -10,10 +10,6 @@ variable "task_definition_arn" {
   type = string
 }
 
-variable "scheduling_strategy" {
-  type = string
-}
-
 variable "desired_count" {
   type = number
 }

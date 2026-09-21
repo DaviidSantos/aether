@@ -65,12 +65,6 @@ variable "container_memory" {
   default     = 512
 }
 
-variable "aws_region" {
-  description = "AWS region."
-  type        = string
-  default     = "us-east-1"
-}
-
 variable "volume_name" {
   description = "Name of the volume shared between the task definition and the EC2 host."
   type        = string
