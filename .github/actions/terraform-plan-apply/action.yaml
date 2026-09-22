@@ -8,6 +8,9 @@ inputs:
   AWS_SECRET_ACCESS_KEY:
     description: "Secret Access key for AWS account"
     required: true
+  IMAGE_URI:
+    description: "Full container image URI to deploy (registry/name:tag)"
+    required: true
 
 runs:
   using: "composite"
@@ -29,10 +32,11 @@ runs:
 
     - name: Terragrunt Plan
       shell: bash
+      id: plan
       env:
         TF_VAR_aws_access_key: ${{ inputs.AWS_ACCESS_KEY_ID }}
         TF_VAR_aws_secret_key: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
-        id: plan
+        TF_VAR_image_uri: ${{ inputs.IMAGE_URI }}
       run: terragrunt run --all plan --non-interactive
 
     - name: Terragrunt Apply
@@ -41,4 +45,5 @@ runs:
       env:
         TF_VAR_aws_access_key: ${{ inputs.AWS_ACCESS_KEY_ID }}
         TF_VAR_aws_secret_key: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        TF_VAR_image_uri: ${{ inputs.IMAGE_URI }}
       run: terragrunt run --all apply --non-interactive -- -auto-approve

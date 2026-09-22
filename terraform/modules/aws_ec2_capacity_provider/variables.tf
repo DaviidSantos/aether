@@ -130,3 +130,25 @@ variable "managed_scaling_instance_warmup" {
 variable "cpu_architecture" {
   type = string
 }
+
+variable "instance_market_type" {
+  description = "EC2 market type. Use \"spot\" for cost savings (interruptible) or \"on-demand\" for stability."
+  type        = string
+  default     = "spot"
+
+  validation {
+    condition     = contains(["spot", "on-demand"], var.instance_market_type)
+    error_message = "instance_market_type must be either \"spot\" or \"on-demand\"."
+  }
+}
+
+variable "spot_max_price" {
+  description = "Maximum hourly price for Spot instances. Leave null to pay the current Spot market price (recommended)."
+  type        = string
+  default     = null
+}
+
+variable "associate_public_ip_address" {
+  type    = bool
+  default = true
+}

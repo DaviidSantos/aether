@@ -1,4 +1,3 @@
-# Parameterized architecture query
 data "aws_ssm_parameter" "ecs_ami" {
   name = "/aws/service/ecs/optimized-ami/amazon-linux-2023/${var.cpu_architecture}/recommended/image_id"
 }
@@ -8,11 +7,30 @@ resource "aws_launch_template" "this" {
   image_id      = data.aws_ssm_parameter.ecs_ami.value
   instance_type = var.instance_type
 
+  credit_specification {
+    cpu_credits = "standard"
+  }
+
+  dynamic "instance_market_options" {
+    for_each = var.instance_market_type == "spot" ? [1] : []
+    content {
+      market_type = "spot"
+
+      dynamic "spot_options" {
+        for_each = var.spot_max_price != null ? [1] : []
+        content {
+          max_price = var.spot_max_price
+        }
+      }
+    }
+  }
+
   user_data = base64encode(<<-EOT
     #!/bin/bash
     set -euo pipefail
     dnf upgrade -y --releasever=2023 glib2 gnutls kernel policycoreutils
     echo "ECS_CLUSTER=${var.cluster_name}" >> /etc/ecs/ecs.config
+    ${var.instance_market_type == "spot" ? "echo \"ECS_ENABLE_SPOT_INSTANCE_DRAINING=true\" >> /etc/ecs/ecs.config" : ""}
   EOT
   )
 
@@ -31,7 +49,7 @@ resource "aws_launch_template" "this" {
   }
 
   network_interfaces {
-    associate_public_ip_address = false
+    associate_public_ip_address = var.associate_public_ip_address
     security_groups             = var.security_group_ids
   }
 
@@ -70,6 +88,8 @@ resource "aws_autoscaling_group" "this" {
   vpc_zone_identifier       = var.subnet_ids
   health_check_type         = "EC2"
   health_check_grace_period = var.health_check_grace_period
+
+  protect_from_scale_in = var.instance_market_type == "spot" ? true : false
 
   launch_template {
     id      = aws_launch_template.this.id

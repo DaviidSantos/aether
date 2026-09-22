@@ -36,14 +36,16 @@ jobs:
           aws-region: us-east-1
 
       - name: Build/Push Backend Image
+        id: build_backend
         uses: ./.github/actions/docker-build-push
         with:
           SHOULD_PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           IMAGE_NAME: aether_backend_repository
           DOCKER_FILE_PATH: ./backend
 
-      - name: Terraform Plan and Apply
+      - name: Terraform Plan and Apply Backend
         uses: ./.github/actions/terraform-plan-apply
         with:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          IMAGE_URI: ${{ steps.build_backend.outputs.image_uri }}

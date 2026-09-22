@@ -9,6 +9,8 @@ terraform {
 
 inputs = {
   backend_ecr_repository_name = "aether_backend_repository"
+  environment = "devl"
+  ingress_cidr_blocks = ["0.0.0.0/0"]
 }
 
 remote_state {
