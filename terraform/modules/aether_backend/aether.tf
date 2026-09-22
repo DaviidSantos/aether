@@ -176,7 +176,7 @@ module "ecs_task_definition" {
   }
 
   ecs_launch_type = "EC2"
-  network_mode    = "awsvpc"
+  network_mode    = "bridge"
   cpu_limit       = null
   memory_limit    = null
   pid_mode        = null
