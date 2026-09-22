@@ -27,7 +27,8 @@ variable "log_retention_days" {
 }
 
 variable "image_uri" {
-  type = string
+  type    = string
+  default = "placeholder"
 }
 
 variable "ingress_cidr_blocks" {
