@@ -212,7 +212,7 @@ module "ecs_service" {
   container_name   = local.container_name
   container_port   = local.container_port
 
-  network_mode       = "awsvpc"
+  network_mode       = "bridge"
   security_group_ids = [module.ecs_sg.security_group_id]
   subnet_ids         = data.aws_subnets.default.ids
   assign_public_ip   = true
