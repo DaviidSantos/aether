@@ -49,10 +49,6 @@ variable "instance_max" {
   default = 1
 }
 
-variable "public_subnet_ids" {
-  type = list(string)
-}
-
 variable "container_cpu" {
   description = "Container vCPU units. 1024 = 1 vCPU. 256 = 0.25 vCPU."
   type        = number
