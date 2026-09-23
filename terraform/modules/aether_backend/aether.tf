@@ -228,3 +228,9 @@ module "ecs_service" {
 
   tags = local.common_tags
 }
+
+module "drive_s3_bucket" {
+  source = "../aws_s3"
+
+  s3_bucket_name = "drive_s3_bucket"
+}
