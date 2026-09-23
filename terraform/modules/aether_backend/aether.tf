@@ -232,5 +232,5 @@ module "ecs_service" {
 module "drive_s3_bucket" {
   source = "../aws_s3"
 
-  s3_bucket_name = "drive_s3_bucket"
+  s3_bucket_name = "drive-s3-bucket"
 }
