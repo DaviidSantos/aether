@@ -162,6 +162,8 @@ module "ecs_task_definition" {
   family          = "${local.cluster_name}-backend"
   task_definition = "app.json.tmpl"
 
+  execution_role_arn = aws_iam_role.ecs_task_execution.arn
+
   task_definition_variables = {
     service_name         = local.container_name
     image                = local.image_uri
@@ -173,6 +175,11 @@ module "ecs_task_definition" {
     volume_name          = var.volume_name
     mount_container_path = var.volume_mount_path
     cw_log_group         = aws_cloudwatch_log_group.ecs.name
+    db_username          = module.rds.username
+    db_password_arn      = module.aws_secretsmanager_secret.secret_arn
+    db_host              = module.rds.address
+    db_port              = module.rds.port
+    db_name              = module.rds.db_name
   }
 
   ecs_launch_type = "EC2"
@@ -212,10 +219,8 @@ module "ecs_service" {
   container_name   = local.container_name
   container_port   = local.container_port
 
-  network_mode       = "bridge"
   security_group_ids = [module.ecs_sg.security_group_id]
   subnet_ids         = data.aws_subnets.default.ids
-  assign_public_ip   = true
 
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 200
@@ -232,5 +237,57 @@ module "ecs_service" {
 module "drive_s3_bucket" {
   source = "../aws_s3"
 
-  s3_bucket_name = "drive-s3-bucket"
+  s3_bucket_name = "aether_drive_s3_bucket"
+}
+
+module "rds_sg" {
+  source = "../aws_security_group"
+
+  name        = "${local.cluster_name}-rds-sg"
+  description = "Security group for RDS (${local.service_name})"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress_rules = [
+    {
+      description     = "Postgres from ECS tasks only"
+      from_port       = 5432
+      to_port         = 5432
+      protocol        = "tcp"
+      security_groups = [module.ecs_sg.security_group_id]
+    },
+  ]
+
+  egress_rules = [
+    {
+      description = "All outbound (RDS manages its own traffic)"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    },
+  ]
+
+  tags = local.common_tags
+}
+
+module "rds" {
+  source = "../aws_rds"
+
+
+  name_prefix       = local.cluster_name
+  subnet_ids        = data.aws_subnets.default.ids
+  security_group_id = module.rds_sg.security_group_id
+  instance_class    = "db.t4g.micro"
+  db_name           = "aether_rds"
+  db_username       = "aether"
+
+  tags = local.common_tags
+}
+
+module "aws_secretsmanager_secret" {
+  source = "../aws_secrets_manager"
+
+  secret_name = "rds_password"
+  description = "Password for aether rds database"
+  secret      = module.rds.password
 }
