@@ -221,9 +221,9 @@ module "ecs_service" {
   deployment_maximum_percent         = 200
 
   service_timeouts = {
-    create = "10m"
-    update = "10m"
-    delete = "10m"
+    create = "20m"
+    update = "20m"
+    delete = "20m"
   }
 
   tags = local.common_tags

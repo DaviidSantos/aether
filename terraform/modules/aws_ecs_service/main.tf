@@ -60,4 +60,18 @@ resource "aws_ecs_service" "this" {
     update = var.service_timeouts != null ? var.service_timeouts.update : null
     delete = var.service_timeouts != null ? var.service_timeouts.delete : null
   }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<-EOF
+      echo "Scaling service to 0 before destroy..."
+      aws ecs update-service \
+        --cluster ${self.cluster} \
+        --service ${self.name} \
+        --desired-count 0 \
+        --region ${self.region} || true
+      echo "Waiting for tasks to stop..."
+      sleep 30
+    EOF
+  }
 }
