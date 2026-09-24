@@ -1,5 +1,6 @@
 resource "aws_ecs_task_definition" "this" {
-  family = var.family
+  family             = var.family
+  execution_role_arn = var.execution_role_arn
   container_definitions = templatefile(
     "${path.module}/definitions/${var.task_definition}",
     var.task_definition_variables

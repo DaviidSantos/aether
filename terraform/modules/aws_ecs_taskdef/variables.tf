@@ -48,3 +48,9 @@ variable "pid_mode" {
   type        = string
   default     = null
 }
+
+variable "execution_role_arn" {
+  description = "ARN of the ECS task execution role used to fetch secrets and pull images."
+  type        = string
+  default     = null
+}

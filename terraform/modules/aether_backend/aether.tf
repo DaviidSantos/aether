@@ -162,6 +162,8 @@ module "ecs_task_definition" {
   family          = "${local.cluster_name}-backend"
   task_definition = "app.json.tmpl"
 
+  execution_role_arn = aws_iam_role.ecs_task_execution.arn
+
   task_definition_variables = {
     service_name         = local.container_name
     image                = local.image_uri
@@ -176,7 +178,7 @@ module "ecs_task_definition" {
     db_username          = module.rds.username
     db_password_arn      = module.aws_secretsmanager_secret.secret_arn
     db_host              = module.rds.address
-    db_port              = module.rds.port,
+    db_port              = module.rds.port
     db_name              = module.rds.db_name
   }
 
@@ -217,10 +219,8 @@ module "ecs_service" {
   container_name   = local.container_name
   container_port   = local.container_port
 
-  network_mode       = "bridge"
   security_group_ids = [module.ecs_sg.security_group_id]
   subnet_ids         = data.aws_subnets.default.ids
-  assign_public_ip   = true
 
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 200
