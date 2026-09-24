@@ -240,6 +240,36 @@ module "drive_s3_bucket" {
   s3_bucket_name = "aether_drive_s3_bucket"
 }
 
+module "rds_sg" {
+  source = "../aws_security_group"
+
+  name        = "${local.cluster_name}-rds-sg"
+  description = "Security group for RDS (${local.service_name})"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress_rules = [
+    {
+      description     = "Postgres from ECS tasks only"
+      from_port       = 5432
+      to_port         = 5432
+      protocol        = "tcp"
+      security_groups = [module.ecs_sg.security_group_id]
+    },
+  ]
+
+  egress_rules = [
+    {
+      description = "All outbound (RDS manages its own traffic)"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    },
+  ]
+
+  tags = local.common_tags
+}
+
 module "rds" {
   source = "../aws_rds"
 
